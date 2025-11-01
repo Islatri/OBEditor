@@ -1,0 +1,411 @@
+import type * as monaco from "monaco-editor"
+import { bbcodeTags, getTagName } from "./bbcodeTags"
+
+export const registerBBCodeLanguage = (monaco: typeof import("monaco-editor")) => {
+    // 注册语言
+    monaco.languages.register({ id: "bbcode" })
+
+    // 语法高亮规则
+    monaco.languages.setMonarchTokensProvider("bbcode", {
+        tokenizer: {
+            root: [
+                // === 开标签 ===
+                // 先匹配已知标签（无论是否带参数）
+                [/\[(centre)(?:=[^\]]+)?\]/i, "tag.open.layout"],
+                [/\[(url|img|profile)(?:=[^\]]+)?\]/i, "tag.open.media"],
+                [/\[(b|i|u|s|strike)(?:=[^\]]+)?\]/i, "tag.open.format"],
+                [/\[(color|size)(?:=[^\]]+)?\]/i, "tag.open.style"],
+                [/\[(quote|c|code|notice|heading)(?:=[^\]]+)?\]/i, "tag.open.block"],
+                [/\[(list|box|spoilerbox)(?:=[^\]]+)?\]/i, "tag.open.container"],
+
+                // 默认标签（未知标签）
+                [/\[([a-z]+)(?:=[^\]]+)?\]/i, "tag.open.default"],
+
+                // === 闭标签 ===
+                [/\[\/(centre)\]/i, "tag.close.layout"],
+                [/\[\/(url|img|profile)\]/i, "tag.close.media"],
+                [/\[\/(b|i|u|s|strike)\]/i, "tag.close.format"],
+                [/\[\/(color|size)\]/i, "tag.close.style"],
+                [/\[\/(quote|c|code|notice|heading)\]/i, "tag.close.block"],
+                [/\[\/(list|box|spoilerbox)\]/i, "tag.close.container"],
+                [/\[\/([a-z]+)\]/i, "tag.close.default"],
+
+                // 其他规则
+                [/https?:\/\/[^\s\[\]]+/, "string.url"],
+                [/#[0-9a-fA-F]{3,6}/, "constant.numeric.hex"],
+                [/\[\*\]/, "keyword.list"],
+                [/[^\[]+/, "text"],
+            ],
+        },
+    })
+
+    // 主题定义
+    // 主题定义 - 根据标签类型设置不同颜色
+    monaco.editor.defineTheme("bbcode-theme", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [
+            // 布局标签 (centre, center) - 蓝色
+            { token: "tag.open.layout", foreground: "569cd6", fontStyle: "bold" },
+            { token: "tag.close.layout", foreground: "569cd6", fontStyle: "bold" },
+
+            // 媒体标签 (url, img, profile) - 橙色
+            { token: "tag.open.media", foreground: "ce9178", fontStyle: "bold" },
+            { token: "tag.close.media", foreground: "ce9178", fontStyle: "bold" },
+
+            // 格式标签 (b, i, u, s) - 绿色
+            { token: "tag.open.format", foreground: "4ec9b0", fontStyle: "bold" },
+            { token: "tag.close.format", foreground: "4ec9b0", fontStyle: "bold" },
+
+            // 样式标签 (color, size) - 紫色
+            { token: "tag.open.style", foreground: "c586c0", fontStyle: "bold" },
+            { token: "tag.close.style", foreground: "c586c0", fontStyle: "bold" },
+
+            // 块级标签 (quote, code, notice, heading) - 黄色
+            { token: "tag.open.block", foreground: "dcdcaa", fontStyle: "bold" },
+            { token: "tag.close.block", foreground: "dcdcaa", fontStyle: "bold" },
+
+            // 容器标签 (list, box) - 青色
+            { token: "tag.open.container", foreground: "4fc1ff", fontStyle: "bold" },
+            { token: "tag.close.container", foreground: "4fc1ff", fontStyle: "bold" },
+
+            // 默认标签 - 灰色
+            { token: "tag.open.default", foreground: "808080", fontStyle: "bold" },
+            { token: "tag.close.default", foreground: "808080", fontStyle: "bold" },
+
+            // 其他规则
+            { token: "string.url", foreground: "d7ba7d", fontStyle: "underline" },
+            { token: "constant.numeric.hex", foreground: "b5cea8" },
+            { token: "keyword.list", foreground: "ff8c00" },
+            { token: "text", foreground: "d4d4d4" },
+        ],
+        colors: {
+            "editor.background": "#1e1e1e",
+            "editor.foreground": "#d4d4d4",
+            "editor.lineHighlightBackground": "#2a2a2a",
+            "editorCursor.foreground": "#aeafad",
+            "editor.selectionBackground": "#264f78",
+        },
+    })
+
+    // 自动补全
+    monaco.languages.registerCompletionItemProvider("bbcode", {
+        triggerCharacters: ["["],
+        provideCompletionItems: (model, position) => {
+            const lineContent = model.getLineContent(position.lineNumber)
+            const textBeforeCursor = lineContent.substring(0, position.column - 1)
+
+            // 匹配 [ 后面的内容
+            const match = textBeforeCursor.match(/\[([a-z]*)$/i)
+            if (!match) {
+                return { suggestions: [] }
+            }
+
+            const typedText = match[1]
+            const startColumn = position.column - match[0].length
+
+            const range: monaco.IRange = {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn: startColumn,
+                endColumn: position.column,
+            }
+
+            const suggestions = createCompletionSuggestions(monaco, range, typedText)
+
+            return { suggestions }
+        },
+    })
+
+    // 悬停提示
+    monaco.languages.registerHoverProvider("bbcode", {
+        provideHover: (model, position) => {
+            const word = model.getWordAtPosition(position)
+            if (!word) return null
+
+            const hoverInfo = getHoverInfo(word.word.toLowerCase())
+            if (!hoverInfo) return null
+
+            return {
+                contents: [{ value: hoverInfo }],
+            }
+        },
+    })
+
+    // 括号匹配
+    monaco.languages.setLanguageConfiguration("bbcode", {
+        brackets: [["[", "]"]],
+        autoClosingPairs: [{ open: "[", close: "]" }],
+    })
+
+    // 颜色选择器
+    monaco.languages.registerColorProvider("bbcode", {
+        provideColorPresentations: (model, colorInfo, token) => {
+            const color = colorInfo.color
+            const hex = rgbToHex(color)
+
+            return [
+                {
+                    label: hex,
+                    textEdit: {
+                        range: colorInfo.range,
+                        text: hex,
+                    },
+                },
+            ]
+        },
+
+        provideDocumentColors: (model, token) => {
+            const colors: monaco.languages.IColorInformation[] = []
+            const lines = model.getLineCount()
+
+            // 正则匹配颜色值
+            const colorRegex = /\[color=((?:#?[0-9a-fA-F]{3,8})|(?:rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\))|(?:rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\))|(?:hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\))|(?:hsla\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*[\d.]+\s*\)))\](.*?)\[\/color\]/gi
+
+            for (let line = 1; line <= lines; line++) {
+                const text = model.getLineContent(line)
+                let match
+
+                while ((match = colorRegex.exec(text)) !== null) {
+                    const colorValue = match[1]
+                    const startColumn = match.index + 8 // [color= 的长度
+                    const endColumn = startColumn + colorValue.length
+
+                    const color = parseColor(colorValue)
+                    if (color) {
+                        colors.push({
+                            color: color,
+                            range: {
+                                startLineNumber: line,
+                                endLineNumber: line,
+                                startColumn: startColumn,
+                                endColumn: endColumn,
+                            },
+                        })
+                    }
+                }
+            }
+
+            return colors
+        },
+    })
+
+    // 链接编辑 - 修改开标签自动更新闭标签
+    monaco.languages.registerLinkedEditingRangeProvider("bbcode", {
+        provideLinkedEditingRanges: (model, position) => {
+            const line = model.getLineContent(position.lineNumber)
+            const offset = position.column - 1
+
+            // 检查光标是否在标签名称上
+            // 1. 检查开标签 [tagname] 或 [tagname=value]
+            // 支持任意字符的标签名（除了 ] 和 =），包括空标签名
+            const openTagRegex = /\[([^\]=]*)(?:=[^\]]+)?\]/gi
+            let match: RegExpExecArray | null
+
+            while ((match = openTagRegex.exec(line)) !== null) {
+                const tagName = match[1]
+                const tagStart = match.index + 1 // [ 后面的位置
+                const tagEnd = tagStart + tagName.length
+
+                // 如果光标在开标签的标签名上（包括空标签名的情况）
+                if (offset >= tagStart && offset <= tagEnd) {
+                    // 查找匹配的闭标签
+                    const closeTag = `[/${tagName}]`
+                    const content = model.getValue()
+                    const openTagPos = model.getOffsetAt({
+                        lineNumber: position.lineNumber,
+                        column: tagStart + 1,
+                    })
+
+                    // 在开标签之后查找闭标签
+                    const afterOpenTag = content.substring(openTagPos)
+                    const closeTagIndex = afterOpenTag.indexOf(closeTag)
+
+                    if (closeTagIndex !== -1) {
+                        const closeTagAbsolutePos = openTagPos + closeTagIndex
+                        const closeTagPosition = model.getPositionAt(closeTagAbsolutePos + 2) // +2 跳过 [/
+
+                        return {
+                            ranges: [
+                                {
+                                    startLineNumber: position.lineNumber,
+                                    startColumn: tagStart + 1,
+                                    endLineNumber: position.lineNumber,
+                                    endColumn: tagEnd + 1,
+                                },
+                                {
+                                    startLineNumber: closeTagPosition.lineNumber,
+                                    startColumn: closeTagPosition.column,
+                                    endLineNumber: closeTagPosition.lineNumber,
+                                    endColumn: closeTagPosition.column + tagName.length,
+                                },
+                            ],
+                        }
+                    }
+                }
+            }
+
+            // 2. 检查闭标签 [/tagname]
+            // 支持任意字符的标签名（除了 ]），包括空标签名
+            const closeTagRegex = /\[\/([^\]]*)\]/gi
+
+            while ((match = closeTagRegex.exec(line)) !== null) {
+                const tagName = match[1]
+                const tagStart = match.index + 2 // [/ 后面的位置
+                const tagEnd = tagStart + tagName.length
+
+                // 如果光标在闭标签的标签名上（包括空标签名的情况）
+                if (offset >= tagStart && offset <= tagEnd) {
+                    // 向前查找匹配的开标签（转义特殊字符）
+                    const escapedTagName = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+                    const openTagPattern = new RegExp(`\\[${escapedTagName}(?:=[^\\]]+)?\\]`, "gi")
+                    const content = model.getValue()
+                    const closeTagPos = model.getOffsetAt({
+                        lineNumber: position.lineNumber,
+                        column: tagStart + 1,
+                    })
+                    const beforeCloseTag = content.substring(0, closeTagPos - 2) // -2 to exclude [/
+
+                    // 从后往前找最近的开标签
+                    let lastMatch: RegExpExecArray | null = null
+                    let tempMatch: RegExpExecArray | null
+
+                    while ((tempMatch = openTagPattern.exec(beforeCloseTag)) !== null) {
+                        lastMatch = tempMatch
+                    }
+
+                    if (lastMatch) {
+                        const openTagAbsolutePos = lastMatch.index + 1 // +1 跳过 [
+                        const openTagPosition = model.getPositionAt(openTagAbsolutePos)
+
+                        return {
+                            ranges: [
+                                {
+                                    startLineNumber: openTagPosition.lineNumber,
+                                    startColumn: openTagPosition.column,
+                                    endLineNumber: openTagPosition.lineNumber,
+                                    endColumn: openTagPosition.column + tagName.length,
+                                },
+                                {
+                                    startLineNumber: position.lineNumber,
+                                    startColumn: tagStart + 1,
+                                    endLineNumber: position.lineNumber,
+                                    endColumn: tagEnd + 1,
+                                },
+                            ],
+                        }
+                    }
+                }
+            }
+
+            return { ranges: [] }
+        },
+    })
+}
+
+// 创建补全建议 - 从 bbcodeTags 自动生成
+const createCompletionSuggestions = (monaco: typeof import("monaco-editor"), range: monaco.IRange, filter: string): monaco.languages.CompletionItem[] => {
+    // 从统一的数据源生成补全建议
+    const allSuggestions: monaco.languages.CompletionItem[] = bbcodeTags.map((tag) => {
+        const tagName = getTagName(tag.tag)
+        const hasClosingTag = tag.hasClosingTag !== false // 默认为 true
+
+        // 构建插入文本
+        let insertText: string
+        if (tag.tag.includes("=")) {
+            // 带参数的标签，如 url=xxx, color=#xxx
+            const paramPart = tag.tag.split("=")[1]
+            insertText = hasClosingTag ? `${tagName}=\${1:${paramPart}}]\${2:${tag.placeholder}}[/${tagName}]` : `${tagName}=\${1:${paramPart}}]\${2:${tag.placeholder}}`
+        } else {
+            // 简单标签
+            // 如果 placeholder 包含换行，则在前后添加换行
+            if (tag.placeholder.includes("\n")) {
+                insertText = hasClosingTag ? `${tagName}]\n\${1:${tag.placeholder}}\n[/${tagName}]` : `${tagName}]\n\${1:${tag.placeholder}}`
+            } else {
+                insertText = hasClosingTag ? `${tagName}]\${1:${tag.placeholder}}[/${tagName}]` : `${tagName}]\${1:${tag.placeholder}}`
+            }
+        }
+
+        return {
+            label: tagName,
+            kind: monaco.languages.CompletionItemKind.Snippet,
+            insertText: insertText,
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            documentation: tag.documentation,
+            detail: tag.detail,
+            range: range,
+            sortText: `${tag.sortOrder ?? 9}-${tagName}`,
+        }
+    })
+
+    // 根据已输入内容过滤
+    if (filter) {
+        return allSuggestions.filter((s) => s.label.toString().toLowerCase().startsWith(filter.toLowerCase()))
+    }
+
+    return allSuggestions
+}
+
+// 获取悬停信息 - 从 bbcodeTags 自动生成
+const getHoverInfo = (word: string): string | null => {
+    // 从统一的数据源查找悬停信息
+    const tag = bbcodeTags.find((t) => getTagName(t.tag).toLowerCase() === word.toLowerCase())
+    return tag ? tag.hoverInfo : null
+}
+
+// 颜色解析工具函数
+const parseColor = (colorStr: string): monaco.languages.IColor | null => {
+    // 处理 #RRGGBB 或 #RGB 格式
+    if (colorStr.startsWith("#")) {
+        let hex = colorStr.substring(1)
+
+        // 扩展缩写格式 #RGB -> #RRGGBB
+        if (hex.length === 3) {
+            hex = hex
+                .split("")
+                .map((c) => c + c)
+                .join("")
+        }
+
+        if (hex.length === 6) {
+            const r = parseInt(hex.substring(0, 2), 16) / 255
+            const g = parseInt(hex.substring(2, 4), 16) / 255
+            const b = parseInt(hex.substring(4, 6), 16) / 255
+
+            return { red: r, green: g, blue: b, alpha: 1 }
+        }
+    }
+
+    // 处理 rgb(r, g, b) 格式
+    const rgbMatch = colorStr.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i)
+    if (rgbMatch) {
+        return {
+            red: parseInt(rgbMatch[1]) / 255,
+            green: parseInt(rgbMatch[2]) / 255,
+            blue: parseInt(rgbMatch[3]) / 255,
+            alpha: 1,
+        }
+    }
+
+    // 处理 rgba(r, g, b, a) 格式
+    const rgbaMatch = colorStr.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/i)
+    if (rgbaMatch) {
+        return {
+            red: parseInt(rgbaMatch[1]) / 255,
+            green: parseInt(rgbaMatch[2]) / 255,
+            blue: parseInt(rgbaMatch[3]) / 255,
+            alpha: parseFloat(rgbaMatch[4]),
+        }
+    }
+
+    return null
+}
+
+const rgbToHex = (color: monaco.languages.IColor): string => {
+    const toHex = (value: number) => {
+        const hex = Math.round(value * 255).toString(16)
+        return hex.length === 1 ? "0" + hex : hex
+    }
+
+    return `#${toHex(color.red)}${toHex(color.green)}${toHex(color.blue)}`
+}
