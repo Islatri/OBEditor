@@ -292,6 +292,9 @@
         // 列表项 [*]（同时支持有序和无序列表）
         html = html.replace(/\[\*](.*?)(?=\[\*]|<\/[ou]l>)/gis, "<li>$1</li>")
 
+        // email
+        html = html.replace(/\[email=(.*?)](.*?)\[\/email]/gis, '<a href="mailto:$1">$2</a>')
+
         // Images
         html = html.replace(/\[img](.*?)\[\/img]/gis, '<img src="$1" alt="Image" />')
         html = html.replace(/\[img=(.*?)](.*?)\[\/img]/gis, '<img src="$2" alt="Image" style="max-width: $1px;" />')

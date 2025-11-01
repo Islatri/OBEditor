@@ -189,7 +189,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ```bash
 npm install # 安装依赖
-npm run dev # 启动开发服务器
+npm run dev # 在 5173 启动开发服务器
+
+cd ./server
+npm run dev # 在 3000 启动后端 api
 npm run build # 构建生产版本
 ```
 

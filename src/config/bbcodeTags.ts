@@ -241,10 +241,21 @@ export const bbcodeTags: BBCodeTag[] = [
         tag: "spoilerbox",
         placeholder: "剧透内容",
         icon: "🔍",
-        category: "osu",
+        category: "special",
         documentation: "**剧透框** - osu! 论坛专用剧透框\n\n创建固定标题为 SPOILER 的折叠框\n\n示例: `[spoilerbox]剧透内容[/spoilerbox]`",
         detail: "osu! 剧透框标签",
         hoverInfo: "**剧透框标签** - osu! 论坛剧透框\n\n用法: `[spoilerbox]内容[/spoilerbox]`\n\n剧透框的标题固定为 SPOILER",
         sortOrder: 6,
     },
+    {
+        label: "邮箱",
+        tag: "email=test@gmail.com",
+        placeholder: "Sisy",
+        icon: "✉",
+        category: "media",
+        documentation: "**邮箱** - osu! 邮箱链接\n\n创建触发浏览器mailto功能的邮箱链接\n\n示例: `[email=test@gmail.com]Your email name[/email]`",
+        detail: "osu! 邮箱标签",
+        hoverInfo: "**邮箱标签** - osu! 邮箱链接\n\n用法: `[email=邮箱地址]显示内容[/email]`",
+        sortOrder: 6,
+    }
 ]

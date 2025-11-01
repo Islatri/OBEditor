@@ -19,7 +19,7 @@
   - [x] [url=LINK]文本[/url] URL
   - [x] [profile=userid]玩家名[/profile] 主页
   - [x] [list=TYPE] 有序无序列表
-  - [ ] [email=ADDRESS]文本[/email] 邮箱
+  - [x] [email=ADDRESS]文本[/email] 邮箱
   - [x] [img]图床链接[/img] 图片
   - [ ] [imagemap] 图片映射
   - [ ] [youtube]视频 ID[/youtube] YouTube 视频
