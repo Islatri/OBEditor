@@ -39,7 +39,6 @@ export const registerBBCodeLanguage = (monaco: typeof import("monaco-editor")) =
         },
     })
 
-    // 主题定义
     // 主题定义 - 根据标签类型设置不同颜色
     monaco.editor.defineTheme("bbcode-theme", {
         base: "vs-dark",

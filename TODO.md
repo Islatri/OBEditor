@@ -52,7 +52,7 @@
 - [ ] 支持 Oauth 认证，便于profile Card 中显示 friend / mutual / not friend 和 bell mapper or not 信息
 - [ ] 重构整理BBCodePreview的代码
 - [ ] icon换用更标准的icon，如fontawesome
-- [ ] 简化EditorToolbar逻辑
+- [x] 简化EditorToolbar逻辑
 
 ## Bugs to Fix
 

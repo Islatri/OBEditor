@@ -1,8 +1,8 @@
 export interface BBCodeTag {
     // 工具栏显示
-    label: string // 工具栏按钮文字
+    label: string // 按钮文字
     icon: string // 图标
-    category?: "format" | "media" | "layout" | "special" | "osu"
+    category?: "format" | "media" | "layout" | "special" | "osu" // 分类所属
     shortcut?: string // 键盘快捷键
 
     // BBCode 标签定义
