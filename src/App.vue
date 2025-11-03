@@ -3,15 +3,15 @@
         <EditorToolbar v-if="showToolbar" :tags="bbcodeTags" @insert-tag="handleInsertTag" />
 
         <div class="flex flex-1 overflow-hidden">
-            <div class="flex-1 min-w-0 transition-all duration-300" :class="{ 'flex-none w-1/2': showPreview }">
+            <div class="editor flex-1 min-w-0 transition-all duration-300" :class="{ 'flex-none w-1/2': showPreview }">
                 <span class="sr-only">BBCode 编辑器</span>
-                <div class="absolute h-6 px-2 flex flex-col justify-center">
+                <div class="absolute h-(--header-height) px-2 flex flex-col justify-center">
                     <span class="text-[10px] text-[#9c8dcf]">https://osu.ppy.sh/users/35628968</span>
                 </div>
                 <MonacoEditor ref="editorRef" v-model="content" :options="editorOptions" @editor-mounted="handleEditorMounted" />
             </div>
 
-            <div v-if="showPreview" class="flex-1 border-l border-[#3c3c3c] overflow-y-hidden bg-[#17181c]">
+            <div v-if="showPreview" class="preview flex-1 border-l border-[#3c3c3c] overflow-y-hidden bg-[#17181c]">
                 <BBCodePreview class="mx-auto" :content="content" />
             </div>
         </div>
