@@ -21,7 +21,7 @@
   - [x] [list=TYPE] 有序无序列表
   - [x] [email=ADDRESS]文本[/email] 邮箱
   - [x] [img]图床链接[/img] 图片
-  - [ ] [imagemap] 图片映射
+  - [x] [imagemap] 图片映射
   - [x] [youtube]视频 ID[/youtube] YouTube 视频
   - [x] [audio]URL[/audio] 音频
   - [x] [heading]文本[/heading] 标题(v1)

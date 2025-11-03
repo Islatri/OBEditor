@@ -49,3 +49,9 @@ body,
     padding: 0;
     border: 0 solid;
 }
+
+@media (min-width: 900px) {
+    .bbcode_preview {
+        max-width: 1000px;
+    }
+}

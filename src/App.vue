@@ -11,8 +11,8 @@
                 <MonacoEditor ref="editorRef" v-model="content" :options="editorOptions" @editor-mounted="handleEditorMounted" />
             </div>
 
-            <div v-if="showPreview" class="flex-1 border-l border-[#3c3c3c] overflow-y-auto p-1 pb-0 bg-[#2e3038]">
-                <BBCodePreview :content="content" />
+            <div v-if="showPreview" class="flex-1 border-l border-[#3c3c3c] overflow-y-hidden bg-[#17181c]">
+                <BBCodePreview class="mx-auto" :content="content" />
             </div>
         </div>
 
