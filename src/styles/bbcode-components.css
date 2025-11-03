@@ -153,3 +153,46 @@
     border-color: initial;
     border-image: initial;
 }
+
+/* ImageMap */
+.bbcode .imagemap {
+    max-width: -moz-max-content;
+    max-width: max-content;
+    overflow: hidden;
+    position: relative;
+}
+
+.bbcode .imagemap__image {
+    height: auto;
+    max-width: 100%;
+    -o-object-fit: contain;
+    object-fit: contain;
+    width: auto;
+}
+
+.bbcode .imagemap__link {
+    position: absolute;
+    display: block;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.bbcode .imagemap__link:hover {
+    background-color: rgba(255, 102, 170, 0.2);
+    outline: 2px solid rgba(255, 102, 170, 0.6);
+}
+
+/* ImageMap Tooltip */
+.qtip-default {
+    position: absolute;
+    display: none;
+    max-width: 280px;
+    min-width: 50px;
+    font-size: 12px;
+    line-height: 1.4;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 0;
+    pointer-events: none;
+}

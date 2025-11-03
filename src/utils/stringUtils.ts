@@ -31,3 +31,10 @@ export const escapeHtml = (text: string): string => {
     }
     return text.replace(/[&<>"']/g, (m) => map[m])
 }
+
+/**
+ * 转义单引号用于HTML属性
+ */
+export const escapeSingleQuotes = (str: string): string => {
+    return str.replace(/'/g, "\\'")
+}

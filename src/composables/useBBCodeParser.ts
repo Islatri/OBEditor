@@ -1,8 +1,9 @@
-import { computed, ref, type Ref } from "vue"
-import { trimBrTags, generateRandomId } from "@/utils/stringUtils"
+import { computed, type Ref } from "vue"
+import { trimBrTags, generateRandomId, escapeSingleQuotes } from "@/utils/stringUtils"
 import { createBox, createProfileLink, createAudioBox } from "@/utils/htmlGenerators"
 import { SIZE_REGEX } from "@/constants/bbcode"
 import type { BoxState } from "@/types/bbcode"
+import { generateTooltipId } from "./useImageMapTooltip"
 
 interface UseBBCodeParserOptions {
     content: Ref<string>
@@ -14,6 +15,136 @@ interface UseBBCodeParserOptions {
 
 export const useBBCodeParser = ({ content, boxStates, boxCounters, resetBoxes, refreshKey }: UseBBCodeParserOptions) => {
     let profileCardCounter = 0
+
+    /**
+     * 解析 [imagemap]...[/imagemap] 标签
+     * 格式：
+     * [imagemap]
+     * 图片URL
+     * left top width height 链接URL 标题
+     * ...
+     * [/imagemap]
+     */
+    const parseImageMap = (text: string): string => {
+        const imageMapRegex = /\[imagemap\]([\s\S]*?)\[\/imagemap\]/gi
+
+        return text.replace(imageMapRegex, (match, content) => {
+            try {
+                const lines = content
+                    .trim()
+                    .split("<br>")
+                    .filter((line: string) => line.trim())
+
+                if (lines.length === 0) return match
+
+                const imageUrl = lines[0].trim()
+
+                // 验证图片URL
+                if (!isValidUrl(imageUrl)) {
+                    console.warn("Invalid image URL in imagemap:", imageUrl)
+                    return match
+                }
+
+                // 解析热区（hotspots）
+                const hotspots = []
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim()
+                    const parts = line.split(/\s+/)
+
+                    // 验证每行的部分数量
+                    if (parts.length < 5) {
+                        console.warn("Too few parts in imagemap line:", line)
+                        return match
+                    }
+
+                    const left = parseFloat(parts[0])
+                    const top = parseFloat(parts[1])
+                    const width = parseFloat(parts[2])
+                    const height = parseFloat(parts[3])
+                    const url = parts[4]
+                    const title = parts.slice(5).join(" ")
+
+                    // 验证坐标和尺寸
+                    if (!isValidPercentage(left) || !isValidPercentage(top) || !isValidPercentage(width) || !isValidPercentage(height)) {
+                        console.warn("Invalid coordinates in imagemap line:", line)
+                        return match
+                    }
+
+                    // 验证URL
+                    if (!isValidUrl(url)) {
+                        console.warn("Invalid URL in imagemap line:", url)
+                        return match
+                    }
+
+                    // 验证热区边界
+                    if (!isValidHotspotBoundaries(left, top, width, height)) {
+                        console.warn("Hotspot boundaries exceed limits:", line)
+                        return match
+                    }
+
+                    hotspots.push({ left, top, width, height, url, title })
+                }
+
+                // 生成HTML
+                let html = `<div class="imagemap">`
+                html += `<img class="imagemap__image" loading="lazy" src="${imageUrl}" alt="${imageUrl}">`
+
+                hotspots.forEach((h) => {
+                    const qtipId = generateTooltipId()
+                    if (!h.title) {
+                        html += `<a class="imagemap__link"
+                        href="${h.url}"
+                        data-qtip-id="${qtipId}"
+                        style="left:${h.left}%;top:${h.top}%;width:${h.width}%;height:${h.height}%;"></a>`
+                    } else {
+                        html += `<a class="imagemap__link"
+                        href="${h.url}"
+                        data-qtip-id="${qtipId}"
+                        style="left:${h.left}%;top:${h.top}%;width:${h.width}%;height:${h.height}%;"
+                        onmouseover="window.showImageMapTooltip?.(event, '${escapeSingleQuotes(h.title)}', this)"
+                        onmouseleave="window.hideImageMapTooltip?.(this)"></a>`
+                    }
+                })
+
+                html += `</div>`
+                return html
+            } catch (error) {
+                console.warn("Error parsing imagemap, returning original:", error)
+                return match
+            }
+        })
+    }
+
+    /**
+     * 验证URL格式
+     */
+    const isValidUrl = (url: string): boolean => {
+        if (!url || typeof url !== "string" || !url.match(/^https?:\/\/.+/)) return false
+
+        return true
+    }
+
+    /**
+     * 验证百分比值
+     */
+    const isValidPercentage = (value: number): boolean => {
+        return !isNaN(value) && value >= 0 && value <= 100
+    }
+
+    /**
+     * 验证热区边界
+     */
+    const isValidHotspotBoundaries = (left: number, top: number, width: number, height: number): boolean => {
+        // 检查热区是否超出图像边界
+        if (left + width > 100) return false
+        if (top + height > 100) return false
+
+        // 检查热区尺寸是否合理
+        if (width <= 0 || height <= 0) return false
+        if (width > 100 || height > 100) return false
+
+        return true
+    }
 
     /**
      * 解析 [box=name]...[/box] 标签
@@ -201,6 +332,9 @@ export const useBBCodeParser = ({ content, boxStates, boxCounters, resetBoxes, r
         // Images
         html = html.replace(/\[img](.*?)\[\/img]/gis, '<img src="$1" alt="Image" />')
         html = html.replace(/\[img=(.*?)](.*?)\[\/img]/gis, '<img src="$2" alt="Image" style="max-width: $1px;" />')
+
+        // ImageMap (交互式图片地图)
+        html = parseImageMap(html)
 
         // Youtube
         html = html.replace(/\[youtube](.*?)\[\/youtube]/gis, '<iframe class="u-embed-wide u-embed-wide--bbcode" src="https://www.youtube.com/embed/$1?rel=0" allowfullscreen></iframe>')

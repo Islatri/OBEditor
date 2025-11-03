@@ -13,6 +13,7 @@ import { useBoxToggle } from "@/composables/useBoxToggle"
 import { useUserInfo } from "@/composables/useUserInfo"
 import { useBBCodeParser } from "@/composables/useBBCodeParser"
 import { useUserCard } from "@/composables/useUserCard"
+import { showImageMapTooltip, hideImageMapTooltip, cleanupImageMapTooltips } from "@/composables/useImageMapTooltip"
 
 const props = defineProps<{
     content: string
@@ -41,10 +42,20 @@ onMounted(() => {
     if (typeof window !== "undefined") {
         registerGlobalHandlers()
         registerUserCardHandlers()
+
+        // 注册 imagemap tooltip 处理器
+        ;(window as any).showImageMapTooltip = showImageMapTooltip
+        ;(window as any).hideImageMapTooltip = hideImageMapTooltip
     }
 })
 
 onBeforeUnmount(() => {
     cleanupUserCard()
+    cleanupImageMapTooltips()
+
+    if (typeof window !== "undefined") {
+        delete (window as any).showImageMapTooltip
+        delete (window as any).hideImageMapTooltip
+    }
 })
 </script>

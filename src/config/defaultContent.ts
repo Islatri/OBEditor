@@ -28,6 +28,15 @@ export const defaultContent = `[centre]
 
 查看用户资料：[profile=35628968]SisypheOvO[/profile] 的主页
 
+嵌入imagemap：
+
+[imagemap]
+https://sisy.s-ul.eu/UWlCIYOX
+53 30 40 60 https://osu.ppy.sh/users/35628968 Sisy 123
+70 8 30 7 https://osu.ppy.sh/users/27608705
+0 16 20 7 https://osu.ppy.sh/users/9650376
+[/imagemap]
+
 邮箱链接：[email=test@gmail.com]Sisy 的邮箱[/email]
 
 嵌入音频：
