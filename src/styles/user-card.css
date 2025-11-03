@@ -10,7 +10,7 @@
     left: -28000px;
     line-height: 12px;
     padding: 0;
-    position: absolute;
+    position: fixed;
     top: -28000px;
     color: hsl(var(--hsl-c1));
 }

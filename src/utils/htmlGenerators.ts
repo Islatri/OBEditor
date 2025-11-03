@@ -58,7 +58,7 @@ export const createProfileLink = (userId: string, username: string, qtipId: numb
         data-qtip-id="${qtipId}"
         target="_blank"
         rel="noopener noreferrer"
-        onmouseenter="window.showUserCard?.(${qtipId}, this)"
+        onmouseover="window.showUserCard?.(${qtipId}, this)"
         onmouseleave="window.hideUserCard?.(${qtipId})"
         onclick="window.cancelUserCardShow?.()">
             ${escapeHtml(username)}

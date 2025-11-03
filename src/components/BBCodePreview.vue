@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, onMounted, watch } from "vue"
+    import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue"
     import { useAudioPlayer } from "@/composables/useAudioPlayer"
     import { useBoxToggle } from "@/composables/useBoxToggle"
     import { useUserInfo } from "@/composables/useUserInfo"
@@ -63,6 +63,21 @@
             ;(window as any).showUserCard = showUserCard
             ;(window as any).hideUserCard = hideUserCard
             ;(window as any).keepUserCard = keepUserCard
+        }
+    })
+
+    // 组件卸载时清理
+    onBeforeUnmount(() => {
+        cleanupScrollListener()
+        currentCardInfo = null
+        if (userCardTimeout) {
+            clearTimeout(userCardTimeout)
+            userCardTimeout = null
+        }
+        if (typeof window !== "undefined") {
+            delete (window as any).showUserCard
+            delete (window as any).hideUserCard
+            delete (window as any).keepUserCard
         }
     })
 
@@ -319,6 +334,8 @@
 
     // 用户卡片相关的全局处理器
     let userCardTimeout: number | null = null
+    let currentCardInfo: { qtipId: number; triggerElement: HTMLElement } | null = null
+    let scrollListener: (() => void) | null = null
 
     // 保持用户卡片显示（不重新计算位置）
     const keepUserCard = () => {
@@ -328,11 +345,49 @@
         }
     }
 
+    // 更新用户卡片位置（使用 fixed 定位，相对于视口）
+    const updateCardPosition = (qtipId: number, triggerElement: HTMLElement) => {
+        const card = document.getElementById(`qtip-${qtipId}`)
+        if (!card) return
+
+        const rect = triggerElement.getBoundingClientRect()
+
+        // 使用 fixed 定位，直接用视口坐标
+        let top = (rect.bottom + rect.top) / 2 - 67
+        let left = rect.right
+
+        // 更新位置（不触发过渡动画）
+        card.style.transition = "none"
+        card.style.top = `${top}px`
+        card.style.left = `${left}px`
+        // 恢复过渡动画（用于透明度变化）
+        requestAnimationFrame(() => {
+            card.style.transition = "opacity 0.1s ease"
+        })
+    }
+
+    // 清理滚动监听器
+    const cleanupScrollListener = () => {
+        if (scrollListener) {
+            const previewContent = document.querySelector(".preview-content")
+            if (previewContent) {
+                previewContent.removeEventListener("scroll", scrollListener)
+            }
+            scrollListener = null
+        }
+    }
+
     const showUserCard = async (qtipId: number, triggerElement: HTMLElement) => {
         if (userCardTimeout) {
             clearTimeout(userCardTimeout)
             userCardTimeout = null
         }
+
+        // 清理之前的滚动监听器
+        cleanupScrollListener()
+
+        // 存储当前 card 信息
+        currentCardInfo = { qtipId, triggerElement }
 
         // 立即隐藏所有其他已显示的卡片
         const allCards = document.querySelectorAll('[id^="qtip-"]')
@@ -462,7 +517,7 @@
         if (card) {
             const rect = triggerElement.getBoundingClientRect()
             const cardRect = card.getBoundingClientRect()
-            let top = (rect.bottom + rect.top) / 2 - 65
+            let top = (rect.bottom + rect.top) / 2 - 67
             let left = rect.right
 
             // 如果超出右侧边界，不显示
@@ -470,8 +525,8 @@
                 return
             }
 
-            // 如果超出底部边界，不显示
-            if (top + cardRect.height > window.innerHeight + window.scrollY) {
+            // 如果超出底部边界，不显示（fixed 定位相对于视口）
+            if (top + cardRect.height > window.innerHeight) {
                 return
             }
 
@@ -480,6 +535,17 @@
             card.style.top = `${top}px`
             card.style.left = `${left}px`
             card.style.display = "block"
+
+            // 添加滚动监听器
+            const previewContent = document.querySelector(".preview-content")
+            if (previewContent) {
+                scrollListener = () => {
+                    if (currentCardInfo) {
+                        updateCardPosition(currentCardInfo.qtipId, currentCardInfo.triggerElement)
+                    }
+                }
+                previewContent.addEventListener("scroll", scrollListener)
+            }
         }
     }
 
@@ -494,6 +560,11 @@
                 setTimeout(() => {
                     card.style.display = "none"
                 }, 100)
+
+                if (currentCardInfo && currentCardInfo.qtipId === qtipId) {
+                    cleanupScrollListener()
+                    currentCardInfo = null
+                }
             }
         }, 200)
     }
