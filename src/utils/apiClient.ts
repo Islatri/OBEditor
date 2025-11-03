@@ -1,7 +1,3 @@
-/**
- * API 客户端工具
- */
-
 const API_BASE = "http://localhost:3000"
 
 export class ApiError extends Error {
@@ -14,9 +10,6 @@ export class ApiError extends Error {
     }
 }
 
-/**
- * API 客户端
- */
 export const apiClient = {
     /**
      * GET 请求

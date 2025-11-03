@@ -1,5 +1,4 @@
-// 完整的音频播放器 composable - 基于 osu! 官方实现
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 
 // 时间格式化
 type TimeFormat = 'minute_minimal' | 'minute' | 'hour_minimal' | 'hour'
@@ -194,7 +193,6 @@ export const useAudioPlayer = () => {
         }
     }
 
-    // 同步状态
     const syncState = () => {
         updatePlayers((player) => {
             player.dataset.audioHasDuration = Number.isFinite(audio.duration) ? '1' : '0'
@@ -206,19 +204,16 @@ export const useAudioPlayer = () => {
         syncProgress()
     }
 
-    // 设置状态
     const setState = (newState: PlayState) => {
         state = newState
         syncState()
     }
 
-    // 设置时间
     const setTime = (t: number) => {
         audio.currentTime = t
         syncProgress()
     }
 
-    // 停止播放
     const stop = () => {
         audio.pause()
         currentSlider?.end()
@@ -226,7 +221,6 @@ export const useAudioPlayer = () => {
         onPause()
     }
 
-    // 加载音频
     const load = (player: HTMLElement) => {
         const audioUrl = player.dataset.audioUrl
 
@@ -257,7 +251,6 @@ export const useAudioPlayer = () => {
         })
     }
 
-    // 切换播放/暂停
     const togglePlay = () => {
         if (!url) {
             return
@@ -270,7 +263,6 @@ export const useAudioPlayer = () => {
         }
     }
 
-    // 事件处理器
     const onPause = () => {
         setState('paused')
     }
@@ -339,13 +331,11 @@ export const useAudioPlayer = () => {
         }
     }
 
-    // 初始化所有播放器
     const initAudioPlayers = () => {
         const players = document.querySelectorAll('.js-audio--player')
         players.forEach((player) => {
             if (!(player instanceof HTMLElement)) return
 
-            // 检查是否已经初始化过
             if (player.dataset.audioInitialized === '1') return
             player.dataset.audioInitialized = '1'
 
@@ -370,7 +360,6 @@ export const useAudioPlayer = () => {
         })
     }
 
-    // 监听 DOM 变化
     const observePage = (mutations: MutationRecord[]) => {
         let shouldInit = false
 
@@ -389,7 +378,6 @@ export const useAudioPlayer = () => {
         }
     }
 
-    // 设置音频事件监听器
     const setupAudioEvents = () => {
         audio.addEventListener('pause', onPause)
         audio.addEventListener('playing', onPlaying)
@@ -397,7 +385,6 @@ export const useAudioPlayer = () => {
         audio.addEventListener('timeupdate', onTimeupdate)
     }
 
-    // 清理
     const cleanup = () => {
         audio.pause()
         audio.src = ''

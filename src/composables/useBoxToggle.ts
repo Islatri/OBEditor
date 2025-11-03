@@ -1,7 +1,3 @@
-/**
- * 盒子折叠/展开功能
- */
-
 import { ref, shallowRef, type Ref, type ShallowRef } from "vue"
 import { CHEVRON_ICONS } from "@/constants/icons"
 import type { BoxState, BoxCounters } from "@/types/bbcode"

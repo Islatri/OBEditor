@@ -1,7 +1,3 @@
-/**
- * BBCode 相关类型定义
- */
-
 export interface BBCodeTag {
     label: string
     icon: string

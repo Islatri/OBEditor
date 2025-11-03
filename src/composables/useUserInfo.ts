@@ -1,7 +1,3 @@
-/**
- * 用户信息管理
- */
-
 import { ref, type Ref, onMounted } from "vue"
 import { apiClient, ApiError } from "@/utils/apiClient"
 import { API_ENDPOINTS } from "@/constants/bbcode"

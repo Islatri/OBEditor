@@ -1,8 +1,3 @@
-/**
- * HTML 生成工具函数
- * 用于生成 BBCode 解析后的 HTML 字符串
- */
-
 import { CHEVRON_ICONS } from "@/constants/icons"
 import type { BoxState } from "@/types/bbcode"
 import { escapeHtml } from "./stringUtils"
