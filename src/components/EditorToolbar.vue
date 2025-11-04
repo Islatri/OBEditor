@@ -4,7 +4,7 @@
             <div class="flex items-center gap-1 pl-3 pr-1 py-1 bg-[#363636] rounded border border-[#454545]">
                 <span class="text-xs text-[#a8a8a8] mr-1.5 font-semibold hidden md:inline">{{ category.label }}</span>
                 <button v-for="tag in category.tags" :key="tag.tag" :class="buttonClass" :title="getTagTitle(tag)" @click="$emit('insert-tag', tag)">
-                    <span class="flex items-center justify-center font-bold">{{ tag.icon }}</span>
+                    <i :class="tag.icon"></i>
                 </button>
             </div>
 

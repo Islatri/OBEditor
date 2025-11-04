@@ -44,9 +44,10 @@
 
 - [ ] 提供多种主题支持
 - [ ] 支持导入内容
-- [ ] 支持内容记忆
+- [ ] 支持内容记忆、
+- [ ] 支持显示/不显示 Preview
 - [x] 支持编辑器和预览的宽度调整
-  - [ ] 支持宽度记忆
+  - [x] 支持宽度记忆
 - [ ] 优化预览渲染性能（尝试局部渲染）
 - [ ] 支持size的快捷选项
 - [ ] 如果可能，添加左右同步滚动功能
@@ -58,9 +59,18 @@
 - [x] 创建服务层
   - [x] `services/userService.ts` - 用户 API 调用
   - [x] `services/bbcodeService.ts` - BBCode 解析服务
-- [ ] icon换用更标准的icon，如fontawesome
+- [x] icon换用更标准的icon，如fontawesome
 - [x] 简化EditorToolbar逻辑
 - [ ] 尝试阅读osu-web源码，寻找有无更强可用性的解析bbcode、渲染方案（防止未预测的情况下渲染结果与官方不同）
+- [ ] 尝试在profile的基础上兼容forum、beatmap description、team description
+- [ ] 尝试添加多种模式：
+  - [ ] 右侧实时渲染
+  - [ ] 类似md的编辑时即刻渲染出效果的模式（由于基于 MonacoEditor 似乎不太可能）
+- [ ] 添加用户设置内容
+  - [ ] 设置保存策略：快捷键+按钮或auto save
+    - [ ] 保存方式：localstorage（强调此为非安全易被清除的）、上传云（这意味着我可能要支持云？）、导出文件
+    - [ ] 若为localstorage，可添加侧栏用于选择要编辑的内容
+  - [ ] 选择跟据不同内容（profile、forum、beatmap description、team description）切换样式
 
 ## Bugs to Fix
 

@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, computed, watch, nextTick, onUnmounted } from "vue"
+    import { ref, computed, watch } from "vue"
     import MonacoEditor from "./components/MonacoEditor.vue"
     import EditorToolbar from "./components/EditorToolbar.vue"
     import BBCodePreview from "./components/BBCodePreview.vue"
