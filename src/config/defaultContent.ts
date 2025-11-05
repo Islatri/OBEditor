@@ -32,9 +32,9 @@ export const defaultContent = `[centre]
 
 [imagemap]
 https://sisy.s-ul.eu/UWlCIYOX
-53 30 40 60 https://osu.ppy.sh/users/35628968 Sisy 123
-70 8 30 7 https://osu.ppy.sh/users/27608705
-0 16 20 7 https://osu.ppy.sh/users/9650376
+53 30 40 60 https://osu.ppy.sh/users/35628968 Sisy
+30 70 15 28 https://osu.ppy.sh/users/27608705 MarioKartya
+18 70 12 28 https://osu.ppy.sh/users/9650376 Robinia
 [/imagemap]
 
 邮箱链接：[email=test@gmail.com]Sisy 的邮箱[/email]

@@ -8,35 +8,35 @@
 
         <!-- Dropdown Menu -->
         <transition enter-active-class="transition duration-100" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-100" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-            <div v-show="showDropdown && isAuthenticated" class="absolute right-0 mt-4 w-56 bg-[#22242a]/95 backdrop-blur-md outline-[1.5px] outline-[#585858] rounded-lg shadow-2xl shadow-black/60 overflow-hidden z-50">
+            <div v-show="showDropdown && isAuthenticated" class="absolute right-0 mt-4 w-56 bg-[#22242a]/95 backdrop-blur-md outline outline-[hsla(var(--hsl-b5),0.9)] rounded-lg shadow-2xl shadow-black/60 overflow-hidden z-50 object-cover" :style="userData?.cover?.custom_url ? { backgroundImage: 'url(' + userData?.cover?.custom_url + ')', backgroundPosition: 'center center', backgroundSize: 'cover' } : {}">
                 <!-- User Info Section -->
-                <div class="px-5 py-4 bg-linear-to-br from-[#2e3038] to-[#1a1b1e]/50">
+                <div class="px-5 py-4 bg-[hsla(var(--hsl-b5),0.7)]">
                     <div class="space-y-1">
                         <p class="text-base font-semibold text-[#cccccc] truncate">
                             {{ userData?.username }}
                         </p>
-                        <p class="text-sm text-[#999999]">
+                        <p class="text-sm text-[#bcbcbc]">
                             {{ userData?.country?.name || "Unknown" }}
                         </p>
                         <div v-if="userData?.statistics_rulesets?.osu" class="pt-2 space-y-1.5">
                             <div class="flex justify-between items-center text-xs">
-                                <span class="text-[#666666]">全球排名</span>
-                                <span class="font-medium text-[#ff66aa]"> #{{ formatNumber(userData.statistics_rulesets.osu.global_rank) }} </span>
+                                <span class="text-[#aeaeae]">全球排名</span>
+                                <span class="font-medium text-[#ff66aa]"> #{{ formatNumber(getRuleset(userData)?.global_rank) }} </span>
                             </div>
                             <div class="flex justify-between items-center text-xs">
-                                <span class="text-[#666666]">表现值</span>
-                                <span class="font-medium text-[#ff66aa]"> {{ formatNumber(userData.statistics_rulesets.osu.pp) }} PP </span>
+                                <span class="text-[#aeaeae]">表现值</span>
+                                <span class="font-medium text-[#ff66aa]"> {{ formatNumber(getRuleset(userData)?.pp) }} PP </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Divider -->
-                <div class="h-px bg-linear-to-r from-transparent via-[#3c3c3c]/40 to-transparent"></div>
+                <div class="h-px bg-linear-to-r from-transparent bg-[hsla(var(--hsl-b5),0.8)]"></div>
 
                 <!-- Logout Button -->
-                <div class="p-2">
-                    <button @click="handleLogout" class="w-full px-4 py-2 text-sm font-medium text-[#999999] bg-[#2e3038]/40 hover:bg-[hsl(var(--hsl-l1))] hover:text-[#1a1b1e] rounded-lg transition-all duration-250 ease-out">登出</button>
+                <div class="p-2 bg-[hsla(var(--hsl-b5),0.7)]">
+                    <button @click="handleLogout" class="w-full px-4 py-2 text-sm font-medium text-[#999999] bg-[#2e3038]/40 hover:bg-[hsla(var(--hsl-l1),0.7)] hover:text-[#1a1b1e] rounded-lg transition-all duration-250 ease-out">登出</button>
                 </div>
             </div>
         </transition>
@@ -211,6 +211,14 @@ onMounted(() => {
         fetchUserData()
     }
 })
+
+type RulesetKey = keyof NonNullable<User['statistics_rulesets']>
+
+const getRuleset = (ud: User | null) => {
+    if (!ud || !ud.statistics_rulesets) return undefined
+    const key = (ud.playmode as RulesetKey) || "osu"
+    return ud.statistics_rulesets[key]
+}
 
 const formatNumber = (num: number | null | undefined): string => {
     if (num === null || num === undefined) return "N/A"
